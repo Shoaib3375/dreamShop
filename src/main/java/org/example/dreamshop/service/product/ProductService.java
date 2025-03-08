@@ -4,19 +4,35 @@ import lombok.RequiredArgsConstructor;
 import org.example.dreamshop.Model.Category;
 import org.example.dreamshop.Model.Product;
 import org.example.dreamshop.exception.productNotFoundException;
+import org.example.dreamshop.repository.CategoryRepository;
 import org.example.dreamshop.repository.ProductRepository;
 import org.example.dreamshop.request.AddProductRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class ProductService implements IProductService{
 	private final ProductRepository productRepository;
+	private final CategoryRepository categoryRepository;
+
 	@Override
 	public Product addProduct(AddProductRequest request) {
-		return null;
+		// check if the category is found in the db
+		// if yes, set it as the new product category
+		// if not, create a new category and set it as the new product category
+		// The set as the new product category
+
+		Category category = Optional.ofNullable(categoryRepository.findByName(request.getCategory().getName()))
+				.orElseGet(()->{
+					Category newCategory = new Category(request.getCategory().getName());
+					return categoryRepository.save(newCategory);
+				});
+
+		request.setCategory(category);
+		return productRepository.save(createProduct(request, category));
 	}
 
 	private Product createProduct(AddProductRequest request, Category category){
